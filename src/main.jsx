@@ -129,8 +129,19 @@ const routes = {
   },
 };
 
-function getWhatsappUrl(route) {
-  const message = route?.whatsapp || "היי Chasing Fun, עברתי את המסע ורוצה לבדוק אם הטיול מתאים לי.";
+function getWhatsappUrl({ route, routeId, motivationId, confidenceGap, ctaId }) {
+  const baseMessage =
+    route?.whatsapp ||
+    "היי Chasing Fun, עברתי את המסע ורוצה לבדוק אם הטיול מתאים לי.";
+  const context = [
+    "",
+    "---",
+    `route_id: ${routeId || "unknown"}`,
+    `motivation_id: ${motivationId || "unknown"}`,
+    `confidence_gap: ${confidenceGap || "unknown"}`,
+    `cta_id: ${ctaId || "final_whatsapp"}`,
+  ].join("\n");
+  const message = `${baseMessage}${context}`;
   return `${WHATSAPP_BASE_URL}?text=${encodeURIComponent(message)}`;
 }
 
@@ -157,8 +168,19 @@ function App() {
       return (
         <Intro
           onStart={() => {
-            track("journey_started");
-            track("flow_step_viewed", { step_id: "motivation" });
+            track("journey_started", {
+              route_id: null,
+              motivation_id: null,
+              confidence_gap: null,
+              cta_id: "start_journey",
+            });
+            track("flow_step_viewed", {
+              step_id: "motivation",
+              route_id: null,
+              motivation_id: null,
+              confidence_gap: null,
+              cta_id: null,
+            });
             setStep("q1");
           }}
         />
@@ -172,13 +194,26 @@ function App() {
           onSelect={(id) => {
             const route = motivations.find((item) => item.id === id)?.route;
             setSelectedMotivation(id);
-            track("motivation_selected", { motivation_id: id });
-            track("route_selected", { route_id: route, motivation_id: id });
+            track("motivation_selected", {
+              motivation_id: id,
+              route_id: route,
+              confidence_gap: null,
+              cta_id: null,
+            });
+            track("route_selected", {
+              route_id: route,
+              motivation_id: id,
+              confidence_gap: null,
+              cta_id: null,
+            });
           }}
           onContinue={() => {
             track("flow_step_viewed", {
               step_id: "route_reveal",
               route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: null,
+              cta_id: null,
             });
             setStep("reveal");
           }}
@@ -196,10 +231,15 @@ function App() {
             track("cta_clicked", {
               cta_id: "continue_path",
               route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: null,
             });
             track("flow_step_viewed", {
               step_id: "confidence_gap",
               route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: null,
+              cta_id: null,
             });
             setStep("q2");
           }}
@@ -218,13 +258,19 @@ function App() {
             setConfidenceGap(gap);
             track("confidence_gap_selected", {
               confidence_gap_id: gap,
+              confidence_gap: gap,
               route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              cta_id: null,
             });
           }}
           onContinue={() => {
             track("flow_step_viewed", {
               step_id: "confidence_module",
               route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: confidenceGap,
+              cta_id: null,
             });
             setStep("confidence");
           }}
@@ -243,10 +289,15 @@ function App() {
             track("section_engaged", {
               section_id: "confidence_module",
               route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: confidenceGap,
+              cta_id: null,
             });
             track("cta_seen", {
               cta_id: "final_whatsapp",
               route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: confidenceGap,
               cta_readiness: "medium_high",
             });
             setStep("final");
@@ -260,6 +311,8 @@ function App() {
       <FinalCta
         route={selectedRoute}
         routeId={selectedRouteId}
+        motivationId={selectedMotivation}
+        confidenceGap={confidenceGap}
         onBack={() => setStep("confidence")}
       />
     );
@@ -496,7 +549,9 @@ function ConfidenceModule({ route, routeId, confidenceGap, onContinue, onBack })
   );
 }
 
-function FinalCta({ route, routeId, onBack }) {
+function FinalCta({ route, routeId, motivationId, confidenceGap, onBack }) {
+  const ctaId = "final_whatsapp";
+
   return (
     <Shell tone="from-dune via-foam to-aqua/70">
       <Header label="השלב הבא" onBack={onBack} />
@@ -530,18 +585,28 @@ function FinalCta({ route, routeId, onBack }) {
       <div className="mt-auto pt-8">
         <a
           className="primary-button flex items-center justify-center"
-          href={getWhatsappUrl(route)}
+          href={getWhatsappUrl({
+            route,
+            routeId,
+            motivationId,
+            confidenceGap,
+            ctaId,
+          })}
           target="_blank"
           rel="noreferrer"
           onClick={() => {
             track("cta_clicked", {
-              cta_id: "final_whatsapp",
+              cta_id: ctaId,
               route_id: routeId,
+              motivation_id: motivationId,
+              confidence_gap: confidenceGap,
               route_name: route.name,
             });
             track("call_booking_clicked", {
               route_id: routeId,
-              cta_id: "final_whatsapp",
+              motivation_id: motivationId,
+              confidence_gap: confidenceGap,
+              cta_id: ctaId,
             });
           }}
         >
