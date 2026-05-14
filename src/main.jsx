@@ -228,7 +228,7 @@ function toggleLimitedSelection(list, id) {
   }
 
   if (list.length >= MAX_SELECTIONS) {
-    return list;
+    return [...list.slice(1), id];
   }
 
   return [...list, id];
@@ -1278,7 +1278,6 @@ function ProofValues({ route, experience, skipHref, onContinue, onBack }) {
 
       <div className="mt-auto pt-6">
         <PrimaryButton onClick={onContinue}>לעבור לשיחת התאמה</PrimaryButton>
-        <SkipToCallLink href={skipHref} ctaId="skip_to_call_proof" stepId="proof_values" />
       </div>
     </Shell>
   );
