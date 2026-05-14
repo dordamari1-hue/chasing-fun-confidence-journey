@@ -129,6 +129,72 @@ const routes = {
   },
 };
 
+const routeExperience = {
+  social: {
+    typicalTitle: "איך זה נראה ביום רגיל כשבאים בשביל אנשים?",
+    typicalCopy:
+      "יום טוב לא צריך להרגיש כמו פעילות חברתית מאולצת. הוא נבנה מרגעים קטנים: גלישה ביחד, אוכל, הליכה, צחוקים, זמן פתוח, ושיחות שקורות בלי שמישהו מנסה לייצר אותן בכוח.",
+    typicalMoments: ["בוקר סביב הים", "ארוחה משותפת", "ערב שנפתח טבעי"],
+    methodTitle: "החיבור מתחיל כבר בתחילת הטיול.",
+    methodCopy:
+      "השלבים הראשונים בנויים כדי לעזור לאנשים לנחות, להכיר, ולהרגיש חלק לפני שהחוויה נהיית גדולה ומהירה יותר.",
+    proofTitle: "מה צריך להוכיח כאן?",
+    proofCopy:
+      "כאן נכניס עדות אמיתית של מישהו שהגיע לבד, חשש מהקבוצה, ובסוף הרגיש חלק מהחבורה.",
+  },
+  surf: {
+    typicalTitle: "איך נראה יום כשהגלישה היא חלק מהקצב?",
+    typicalCopy:
+      "הגלישה לא צריכה להשתלט על כל היום או להפוך למבחן. היא חלק מהקצב: נכנסים למים, מנסים, נופלים, צוחקים, לומדים, ואז ממשיכים לחיות את היום.",
+    typicalMoments: ["סשן גלישה", "מנוחה ואוכל", "רגע קטן של התקדמות"],
+    methodTitle: "ההתקדמות מגיעה מהקצב, לא מלחץ.",
+    methodCopy:
+      "הטיול מחזיק את הגלישה בצורה שמאפשרת למתחילים ומשתפרים להרגיש שיש מקום לרמה שלהם.",
+    proofTitle: "מה צריך להוכיח כאן?",
+    proofCopy:
+      "כאן נכניס עדות של מתחיל או משתתף שפחד מהרמה שלו וגילה שהוא יכול ליהנות ולהתקדם.",
+  },
+  reset: {
+    typicalTitle: "איך מרגיש יום של ריסט אמיתי?",
+    typicalCopy:
+      "זה לא רק יעד יפה. זה קצב אחר: ים, אנשים, תנועה, זמן פתוח, שקיעה, רגעים לא מתוכננים, והתחושה שאתה סוף סוף לא רץ אחרי היום.",
+    typicalMoments: ["ים ותנועה", "זמן פתוח", "רגע של חופש"],
+    methodTitle: "המסגרת קיימת כדי לאפשר חופש.",
+    methodCopy:
+      "כשמישהו אחר מחזיק את הדברים החשובים, קל יותר לשחרר, להיות נוכח, ולתת לחוויה לעבוד.",
+    proofTitle: "מה צריך להוכיח כאן?",
+    proofCopy:
+      "כאן נכניס רגע ויזואלי או עדות שמראה שהטיול מרגיש כמו שינוי מצב, לא רק חופשה.",
+  },
+  guided: {
+    typicalTitle: "איך נראה יום שיש בו סדר בלי נוקשות?",
+    typicalCopy:
+      "יש קצב, יש אנשים שמחזיקים את התמונה, ויש מספיק גמישות כדי שזה לא ירגיש כמו טיול מאורגן כבד.",
+    typicalMoments: ["הכנה ברורה", "מעבר חלק", "חופש בתוך מסגרת"],
+    methodTitle: "יש שכבות שמחזיקות את החוויה.",
+    methodCopy:
+      "הטיול נבנה סביב שכבות: חברה, גלישה, לוגיסטיקה, רווחה, יעד, הנאה ותיעוד. זה מה שמאפשר לחוויה להרגיש חופשית אבל לא כאוטית.",
+    proofTitle: "מה צריך להוכיח כאן?",
+    proofCopy:
+      "כאן נכניס וידאו קצר של דור/צוות, רגע מאחורי הקלעים, או הוכחה שהחוויה מוחזקת מקצועית.",
+  },
+  value: {
+    typicalTitle: "איפה מרגישים את הערך ביום עצמו?",
+    typicalCopy:
+      "הערך לא נמצא רק ברשימת דברים שמקבלים. הוא נמצא באיך שהיום מרגיש: פחות התעסקות, יותר ביטחון, אנשים נכונים, גלישה, יעד, וקצב שלא היית בונה לבד.",
+    typicalMoments: ["חוויה מוחזקת", "אנשים נכונים", "פחות סיכון"],
+    methodTitle: "השיטה היא חלק מהערך.",
+    methodCopy:
+      "כשיש מבנה מאחורי החוויה, הסיכוי לבזבז זמן, כסף ואמון יורד. זה ההבדל בין עוד חופשה לבין חוויה שנבנתה נכון.",
+    proofTitle: "מה צריך להוכיח כאן?",
+    proofCopy:
+      "כאן נכניס עדות או רגע שמראה למה החוויה מרגישה שווה יותר מסתם חופשה או טיול גלישה רגיל.",
+  },
+};
+
+const methodStages = ["לפני", "התחלה", "אמצע", "סיום", "אחרי"];
+const methodLayers = ["חברה", "גלישה", "לוגיסטיקה", "רווחה", "יעד", "הנאה", "תיעוד"];
+
 function getWhatsappUrl({ route, routeId, motivationId, confidenceGap, ctaId }) {
   const baseMessage =
     route?.whatsapp ||
@@ -294,15 +360,106 @@ function App() {
               cta_id: null,
             });
             track("cta_seen", {
+              cta_id: "continue_to_typical_day",
+              route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: confidenceGap,
+              cta_readiness: "medium",
+            });
+            track("flow_step_viewed", {
+              step_id: "typical_day",
+              route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: confidenceGap,
+              cta_id: null,
+            });
+            setStep("typical");
+          }}
+          onBack={() => setStep("q2")}
+        />
+      );
+    }
+
+    if (step === "typical") {
+      return (
+        <TypicalDay
+          route={selectedRoute}
+          routeId={selectedRouteId}
+          experience={routeExperience[selectedRouteId]}
+          onContinue={() => {
+            track("section_engaged", {
+              section_id: "typical_day",
+              route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: confidenceGap,
+              cta_id: "continue_to_method",
+            });
+            track("flow_step_viewed", {
+              step_id: "method",
+              route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: confidenceGap,
+              cta_id: null,
+            });
+            setStep("method");
+          }}
+          onBack={() => setStep("confidence")}
+        />
+      );
+    }
+
+    if (step === "method") {
+      return (
+        <MethodModule
+          route={selectedRoute}
+          routeId={selectedRouteId}
+          experience={routeExperience[selectedRouteId]}
+          onContinue={() => {
+            track("section_engaged", {
+              section_id: "method",
+              route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: confidenceGap,
+              cta_id: "continue_to_proof",
+            });
+            track("flow_step_viewed", {
+              step_id: "proof_values",
+              route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: confidenceGap,
+              cta_id: null,
+            });
+            setStep("proof");
+          }}
+          onBack={() => setStep("typical")}
+        />
+      );
+    }
+
+    if (step === "proof") {
+      return (
+        <ProofValues
+          route={selectedRoute}
+          routeId={selectedRouteId}
+          experience={routeExperience[selectedRouteId]}
+          onContinue={() => {
+            track("section_engaged", {
+              section_id: "proof_values",
+              route_id: selectedRouteId,
+              motivation_id: selectedMotivation,
+              confidence_gap: confidenceGap,
+              cta_id: "continue_to_final_cta",
+            });
+            track("cta_seen", {
               cta_id: "final_whatsapp",
               route_id: selectedRouteId,
               motivation_id: selectedMotivation,
               confidence_gap: confidenceGap,
-              cta_readiness: "medium_high",
+              cta_readiness: "high",
             });
             setStep("final");
           }}
-          onBack={() => setStep("q2")}
+          onBack={() => setStep("method")}
         />
       );
     }
@@ -544,6 +701,140 @@ function ConfidenceModule({ route, routeId, confidenceGap, onContinue, onBack })
 
       <div className="mt-auto pt-6">
         <PrimaryButton onClick={onContinue}>להראות לי את השלב הבא</PrimaryButton>
+      </div>
+    </Shell>
+  );
+}
+
+function TypicalDay({ route, experience, onContinue, onBack }) {
+  return (
+    <Shell tone="from-coral/20 via-dune to-aqua/50">
+      <Header label="איך זה מרגיש" onBack={onBack} />
+      <div className="animate-reveal mt-8">
+        <span className="rounded-full bg-white/75 px-3 py-2 text-xs font-bold text-ink/60">
+          {route.name}
+        </span>
+        <h2 className="mt-5 text-3xl font-black leading-tight">
+          {experience.typicalTitle}
+        </h2>
+        <p className="mt-4 text-lg leading-7 text-ink/72">
+          {experience.typicalCopy}
+        </p>
+      </div>
+
+      <div className="animate-reveal-delayed mt-7 rounded-[30px] bg-white/75 p-4 shadow-card backdrop-blur">
+        <div className="media-day flex min-h-56 items-end rounded-[24px] p-5">
+          <p className="max-w-64 text-base font-bold leading-6 text-white">
+            Placeholder: כאן ייכנס מיני מונטאז׳ יום טיפוסי לפי הנתיב.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-3">
+        {experience.typicalMoments.map((moment) => (
+          <div key={moment} className="rounded-[22px] bg-white/80 p-4 shadow-card">
+            <p className="text-lg font-extrabold text-ink">{moment}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-auto pt-6">
+        <PrimaryButton onClick={onContinue}>להראות לי את השיטה מאחורי זה</PrimaryButton>
+      </div>
+    </Shell>
+  );
+}
+
+function MethodModule({ route, experience, onContinue, onBack }) {
+  return (
+    <Shell tone="from-aqua/50 via-foam to-dune/70">
+      <Header label="השיטה" onBack={onBack} />
+      <div className="animate-reveal mt-8">
+        <span className="rounded-full bg-white/75 px-3 py-2 text-xs font-bold text-ink/60">
+          {route.name}
+        </span>
+        <h2 className="mt-5 text-3xl font-black leading-tight">
+          {experience.methodTitle}
+        </h2>
+        <p className="mt-4 text-lg leading-7 text-ink/72">
+          {experience.methodCopy}
+        </p>
+      </div>
+
+      <div className="mt-7 rounded-[28px] bg-white/80 p-5 shadow-card">
+        <p className="text-sm font-black uppercase tracking-[0.18em] text-ocean">
+          Trip stages
+        </p>
+        <div className="mt-4 grid grid-cols-5 gap-2">
+          {methodStages.map((stage) => (
+            <div key={stage} className="rounded-2xl bg-aqua/70 px-2 py-3 text-center text-sm font-extrabold text-ink">
+              {stage}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-[28px] bg-ink p-5 text-foam shadow-card">
+        <p className="text-sm font-black uppercase tracking-[0.18em] text-aqua">
+          Trip layers
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {methodLayers.map((layer) => (
+            <span key={layer} className="rounded-full bg-white/12 px-3 py-2 text-sm font-bold">
+              {layer}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-auto pt-6">
+        <PrimaryButton onClick={onContinue}>להראות לי הוכחה וערכים</PrimaryButton>
+      </div>
+    </Shell>
+  );
+}
+
+function ProofValues({ route, experience, onContinue, onBack }) {
+  return (
+    <Shell tone="from-dune via-foam to-aqua/70">
+      <Header label="הוכחה" onBack={onBack} />
+      <div className="animate-reveal mt-8">
+        <span className="rounded-full bg-white/75 px-3 py-2 text-xs font-bold text-ink/60">
+          {route.name}
+        </span>
+        <h2 className="mt-5 text-3xl font-black leading-tight">
+          {experience.proofTitle}
+        </h2>
+        <p className="mt-4 text-lg leading-7 text-ink/72">
+          {experience.proofCopy}
+        </p>
+      </div>
+
+      <div className="mt-7 rounded-[28px] bg-white/80 p-5 shadow-card">
+        <p className="text-sm font-black uppercase tracking-[0.18em] text-sand">
+          Chasing Fun values
+        </p>
+        <div className="mt-4 grid gap-3">
+          <p className="rounded-2xl bg-dune/80 p-4 text-base font-bold leading-6 text-ink">
+            חוויה לפני פרטים. אנשים לפני לוגיסטיקה. חופש עם אחריות.
+          </p>
+          <p className="rounded-2xl bg-aqua/70 p-4 text-base font-bold leading-6 text-ink">
+            Fun הוא לא משהו שזורקים על הטיול בסוף. הוא משהו שבונים סביבו חוויה.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-[24px] bg-ink p-5 text-foam shadow-card">
+        <p className="text-sm font-bold uppercase tracking-[0.16em] text-aqua">
+          Placeholder proof
+        </p>
+        <p className="mt-3 text-lg font-semibold leading-7">
+          כאן תיכנס עדות אמיתית, quote, או קטע וידאו קצר לפי הנתיב.
+        </p>
+      </div>
+
+      <div className="mt-auto pt-6">
+        <PrimaryButton onClick={onContinue}>לעבור לשיחת התאמה</PrimaryButton>
       </div>
     </Shell>
   );
