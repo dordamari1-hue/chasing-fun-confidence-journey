@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 const WHATSAPP_BASE_URL = "https://wa.me/972548668646";
+const MAX_SELECTIONS = 3;
 
 const motivations = [
   {
@@ -38,12 +39,30 @@ const motivations = [
 ];
 
 const confidenceOptions = [
-  "לדעת שלא ארגיש לבד",
-  "לדעת שהרמה שלי בגלישה מתאימה",
-  "להבין שיש מבנה, אבל לא טיול נוקשה",
-  "להרגיש שאני יכול לסמוך על הצוות",
-  "להבין שזה שווה את הזמן והכסף",
-  "להבין איך הטיול עובד בפועל",
+  {
+    id: "not_alone",
+    label: "לדעת שלא ארגיש לבד",
+  },
+  {
+    id: "surf_level",
+    label: "לדעת שהרמה שלי בגלישה מתאימה",
+  },
+  {
+    id: "structure",
+    label: "להבין שיש מבנה, אבל לא טיול נוקשה",
+  },
+  {
+    id: "trust_team",
+    label: "להרגיש שאני יכול לסמוך על הצוות",
+  },
+  {
+    id: "value",
+    label: "להבין שזה שווה את הזמן והכסף",
+  },
+  {
+    id: "how_it_works",
+    label: "להבין איך הטיול עובד בפועל",
+  },
 ];
 
 const routes = {
@@ -195,7 +214,35 @@ const routeExperience = {
 const methodStages = ["לפני", "התחלה", "אמצע", "סיום", "אחרי"];
 const methodLayers = ["חברה", "גלישה", "לוגיסטיקה", "רווחה", "יעד", "הנאה", "תיעוד"];
 
-function getWhatsappUrl({ route, routeId, motivationId, confidenceGap, ctaId }) {
+function getMotivation(id) {
+  return motivations.find((item) => item.id === id);
+}
+
+function getConfidenceOption(id) {
+  return confidenceOptions.find((item) => item.id === id);
+}
+
+function toggleLimitedSelection(list, id) {
+  if (list.includes(id)) {
+    return list.filter((item) => item !== id);
+  }
+
+  if (list.length >= MAX_SELECTIONS) {
+    return list;
+  }
+
+  return [...list, id];
+}
+
+function getWhatsappUrl({
+  route,
+  routeId,
+  motivationId,
+  motivationIds = [],
+  confidenceGap,
+  confidenceGaps = [],
+  ctaId,
+}) {
   const baseMessage =
     route?.whatsapp ||
     "היי Chasing Fun, עברתי את המסע ורוצה לבדוק אם הטיול מתאים לי.";
@@ -204,7 +251,9 @@ function getWhatsappUrl({ route, routeId, motivationId, confidenceGap, ctaId }) 
     "---",
     `route_id: ${routeId || "unknown"}`,
     `motivation_id: ${motivationId || "unknown"}`,
+    `motivation_ids: ${motivationIds.length ? motivationIds.join(",") : "unknown"}`,
     `confidence_gap: ${confidenceGap || "unknown"}`,
+    `confidence_gaps: ${confidenceGaps.length ? confidenceGaps.join(",") : "unknown"}`,
     `cta_id: ${ctaId || "final_whatsapp"}`,
   ].join("\n");
   const message = `${baseMessage}${context}`;
@@ -220,19 +269,33 @@ function track(event, properties = {}) {
 
 function App() {
   const [step, setStep] = useState("intro");
-  const [selectedMotivation, setSelectedMotivation] = useState(null);
-  const [confidenceGap, setConfidenceGap] = useState(null);
+  const [selectedMotivations, setSelectedMotivations] = useState([]);
+  const [primaryMotivation, setPrimaryMotivation] = useState(null);
+  const [selectedConfidenceGaps, setSelectedConfidenceGaps] = useState([]);
+  const [primaryConfidenceGap, setPrimaryConfidenceGap] = useState(null);
 
-  const selectedRouteId = selectedMotivation
-    ? motivations.find((item) => item.id === selectedMotivation)?.route
+  const selectedRouteId = primaryMotivation
+    ? getMotivation(primaryMotivation)?.route
     : null;
 
   const selectedRoute = selectedRouteId ? routes[selectedRouteId] : routes.social;
+  const confidenceGapLabel = primaryConfidenceGap
+    ? getConfidenceOption(primaryConfidenceGap)?.label
+    : null;
 
   const screen = useMemo(() => {
     if (step === "intro") {
       return (
         <Intro
+          skipHref={getWhatsappUrl({
+            route: null,
+            routeId: null,
+            motivationId: primaryMotivation,
+            motivationIds: selectedMotivations,
+            confidenceGap: primaryConfidenceGap,
+            confidenceGaps: selectedConfidenceGaps,
+            ctaId: "skip_to_call_intro",
+          })}
           onStart={() => {
             track("journey_started", {
               route_id: null,
@@ -256,12 +319,88 @@ function App() {
     if (step === "q1") {
       return (
         <QuestionOne
-          selected={selectedMotivation}
+          selected={selectedMotivations}
           onSelect={(id) => {
             const route = motivations.find((item) => item.id === id)?.route;
-            setSelectedMotivation(id);
+            const nextSelected = toggleLimitedSelection(selectedMotivations, id);
+            setSelectedMotivations(nextSelected);
+            if (primaryMotivation && !nextSelected.includes(primaryMotivation)) {
+              setPrimaryMotivation(null);
+            }
             track("motivation_selected", {
               motivation_id: id,
+              route_id: route,
+              motivation_ids: nextSelected,
+              confidence_gap: null,
+              cta_id: null,
+            });
+          }}
+          onContinue={() => {
+            if (selectedMotivations.length === 1) {
+              const motivationId = selectedMotivations[0];
+              const route = getMotivation(motivationId)?.route;
+              setPrimaryMotivation(motivationId);
+              track("primary_motivation_selected", {
+                motivation_id: motivationId,
+                motivation_ids: selectedMotivations,
+                route_id: route,
+                confidence_gap: null,
+                cta_id: null,
+              });
+              track("route_selected", {
+                route_id: route,
+                motivation_id: motivationId,
+                motivation_ids: selectedMotivations,
+                confidence_gap: null,
+                cta_id: null,
+              });
+              track("flow_step_viewed", {
+                step_id: "route_reveal",
+                route_id: route,
+                motivation_id: motivationId,
+                motivation_ids: selectedMotivations,
+                confidence_gap: null,
+                cta_id: null,
+              });
+              setStep("reveal");
+              return;
+            }
+
+            track("flow_step_viewed", {
+              step_id: "primary_motivation",
+              route_id: null,
+              motivation_id: null,
+              motivation_ids: selectedMotivations,
+              confidence_gap: null,
+              cta_id: null,
+            });
+            setStep("q1_primary");
+          }}
+          onBack={() => setStep("intro")}
+          skipHref={getWhatsappUrl({
+            route: null,
+            routeId: null,
+            motivationId: primaryMotivation,
+            motivationIds: selectedMotivations,
+            confidenceGap: primaryConfidenceGap,
+            confidenceGaps: selectedConfidenceGaps,
+            ctaId: "skip_to_call_q1",
+          })}
+        />
+      );
+    }
+
+    if (step === "q1_primary") {
+      return (
+        <PrimaryMotivation
+          selectedMotivations={selectedMotivations}
+          primary={primaryMotivation}
+          onSelect={(id) => {
+            const route = getMotivation(id)?.route;
+            setPrimaryMotivation(id);
+            track("primary_motivation_selected", {
+              motivation_id: id,
+              motivation_ids: selectedMotivations,
               route_id: route,
               confidence_gap: null,
               cta_id: null,
@@ -269,21 +408,33 @@ function App() {
             track("route_selected", {
               route_id: route,
               motivation_id: id,
+              motivation_ids: selectedMotivations,
               confidence_gap: null,
               cta_id: null,
             });
           }}
           onContinue={() => {
+            const route = getMotivation(primaryMotivation)?.route;
             track("flow_step_viewed", {
               step_id: "route_reveal",
-              route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
+              route_id: route,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
               confidence_gap: null,
               cta_id: null,
             });
             setStep("reveal");
           }}
-          onBack={() => setStep("intro")}
+          onBack={() => setStep("q1")}
+          skipHref={getWhatsappUrl({
+            route: selectedRoute,
+            routeId: selectedRouteId,
+            motivationId: primaryMotivation,
+            motivationIds: selectedMotivations,
+            confidenceGap: primaryConfidenceGap,
+            confidenceGaps: selectedConfidenceGaps,
+            ctaId: "skip_to_call_primary_motivation",
+          })}
         />
       );
     }
@@ -293,17 +444,28 @@ function App() {
         <RouteReveal
           route={selectedRoute}
           routeId={selectedRouteId}
+          skipHref={getWhatsappUrl({
+            route: selectedRoute,
+            routeId: selectedRouteId,
+            motivationId: primaryMotivation,
+            motivationIds: selectedMotivations,
+            confidenceGap: confidenceGapLabel,
+            confidenceGaps: selectedConfidenceGaps,
+            ctaId: "skip_to_call_route_reveal",
+          })}
           onContinue={() => {
             track("cta_clicked", {
               cta_id: "continue_path",
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
               confidence_gap: null,
             });
             track("flow_step_viewed", {
               step_id: "confidence_gap",
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
               confidence_gap: null,
               cta_id: null,
             });
@@ -319,14 +481,91 @@ function App() {
         <QuestionTwo
           route={selectedRoute}
           routeId={selectedRouteId}
-          selected={confidenceGap}
+          selected={selectedConfidenceGaps}
+          skipHref={getWhatsappUrl({
+            route: selectedRoute,
+            routeId: selectedRouteId,
+            motivationId: primaryMotivation,
+            motivationIds: selectedMotivations,
+            confidenceGap: confidenceGapLabel,
+            confidenceGaps: selectedConfidenceGaps,
+            ctaId: "skip_to_call_q2",
+          })}
           onSelect={(gap) => {
-            setConfidenceGap(gap);
+            const nextSelected = toggleLimitedSelection(selectedConfidenceGaps, gap);
+            setSelectedConfidenceGaps(nextSelected);
+            if (primaryConfidenceGap && !nextSelected.includes(primaryConfidenceGap)) {
+              setPrimaryConfidenceGap(null);
+            }
             track("confidence_gap_selected", {
               confidence_gap_id: gap,
               confidence_gap: gap,
+              confidence_gaps: nextSelected,
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
+              cta_id: null,
+            });
+          }}
+          onContinue={() => {
+            if (selectedConfidenceGaps.length === 1) {
+              const gapId = selectedConfidenceGaps[0];
+              const gapLabel = getConfidenceOption(gapId)?.label;
+              setPrimaryConfidenceGap(gapId);
+              track("primary_confidence_gap_selected", {
+                confidence_gap_id: gapId,
+                confidence_gap: gapLabel,
+                confidence_gaps: selectedConfidenceGaps,
+                route_id: selectedRouteId,
+                motivation_id: primaryMotivation,
+                motivation_ids: selectedMotivations,
+                cta_id: null,
+              });
+              track("flow_step_viewed", {
+                step_id: "confidence_module",
+                route_id: selectedRouteId,
+                motivation_id: primaryMotivation,
+                motivation_ids: selectedMotivations,
+                confidence_gap: gapLabel,
+                confidence_gaps: selectedConfidenceGaps,
+                cta_id: null,
+              });
+              setStep("confidence");
+              return;
+            }
+
+            track("flow_step_viewed", {
+              step_id: "primary_confidence_gap",
+              route_id: selectedRouteId,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
+              confidence_gap: null,
+              confidence_gaps: selectedConfidenceGaps,
+              cta_id: null,
+            });
+            setStep("q2_primary");
+          }}
+          onBack={() => setStep("reveal")}
+        />
+      );
+    }
+
+    if (step === "q2_primary") {
+      return (
+        <PrimaryConfidenceGap
+          route={selectedRoute}
+          selectedConfidenceGaps={selectedConfidenceGaps}
+          primary={primaryConfidenceGap}
+          onSelect={(id) => {
+            const gapLabel = getConfidenceOption(id)?.label;
+            setPrimaryConfidenceGap(id);
+            track("primary_confidence_gap_selected", {
+              confidence_gap_id: id,
+              confidence_gap: gapLabel,
+              confidence_gaps: selectedConfidenceGaps,
+              route_id: selectedRouteId,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
               cta_id: null,
             });
           }}
@@ -334,13 +573,24 @@ function App() {
             track("flow_step_viewed", {
               step_id: "confidence_module",
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
-              confidence_gap: confidenceGap,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
+              confidence_gap: confidenceGapLabel,
+              confidence_gaps: selectedConfidenceGaps,
               cta_id: null,
             });
             setStep("confidence");
           }}
-          onBack={() => setStep("reveal")}
+          onBack={() => setStep("q2")}
+          skipHref={getWhatsappUrl({
+            route: selectedRoute,
+            routeId: selectedRouteId,
+            motivationId: primaryMotivation,
+            motivationIds: selectedMotivations,
+            confidenceGap: confidenceGapLabel,
+            confidenceGaps: selectedConfidenceGaps,
+            ctaId: "skip_to_call_primary_confidence",
+          })}
         />
       );
     }
@@ -350,27 +600,42 @@ function App() {
         <ConfidenceModule
           route={selectedRoute}
           routeId={selectedRouteId}
-          confidenceGap={confidenceGap}
+          confidenceGap={confidenceGapLabel}
+          skipHref={getWhatsappUrl({
+            route: selectedRoute,
+            routeId: selectedRouteId,
+            motivationId: primaryMotivation,
+            motivationIds: selectedMotivations,
+            confidenceGap: confidenceGapLabel,
+            confidenceGaps: selectedConfidenceGaps,
+            ctaId: "skip_to_call_confidence",
+          })}
           onContinue={() => {
             track("section_engaged", {
               section_id: "confidence_module",
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
-              confidence_gap: confidenceGap,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
+              confidence_gap: confidenceGapLabel,
+              confidence_gaps: selectedConfidenceGaps,
               cta_id: null,
             });
             track("cta_seen", {
               cta_id: "continue_to_typical_day",
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
-              confidence_gap: confidenceGap,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
+              confidence_gap: confidenceGapLabel,
+              confidence_gaps: selectedConfidenceGaps,
               cta_readiness: "medium",
             });
             track("flow_step_viewed", {
               step_id: "typical_day",
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
-              confidence_gap: confidenceGap,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
+              confidence_gap: confidenceGapLabel,
+              confidence_gaps: selectedConfidenceGaps,
               cta_id: null,
             });
             setStep("typical");
@@ -386,19 +651,32 @@ function App() {
           route={selectedRoute}
           routeId={selectedRouteId}
           experience={routeExperience[selectedRouteId]}
+          skipHref={getWhatsappUrl({
+            route: selectedRoute,
+            routeId: selectedRouteId,
+            motivationId: primaryMotivation,
+            motivationIds: selectedMotivations,
+            confidenceGap: confidenceGapLabel,
+            confidenceGaps: selectedConfidenceGaps,
+            ctaId: "skip_to_call_typical_day",
+          })}
           onContinue={() => {
             track("section_engaged", {
               section_id: "typical_day",
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
-              confidence_gap: confidenceGap,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
+              confidence_gap: confidenceGapLabel,
+              confidence_gaps: selectedConfidenceGaps,
               cta_id: "continue_to_method",
             });
             track("flow_step_viewed", {
               step_id: "method",
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
-              confidence_gap: confidenceGap,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
+              confidence_gap: confidenceGapLabel,
+              confidence_gaps: selectedConfidenceGaps,
               cta_id: null,
             });
             setStep("method");
@@ -414,19 +692,32 @@ function App() {
           route={selectedRoute}
           routeId={selectedRouteId}
           experience={routeExperience[selectedRouteId]}
+          skipHref={getWhatsappUrl({
+            route: selectedRoute,
+            routeId: selectedRouteId,
+            motivationId: primaryMotivation,
+            motivationIds: selectedMotivations,
+            confidenceGap: confidenceGapLabel,
+            confidenceGaps: selectedConfidenceGaps,
+            ctaId: "skip_to_call_method",
+          })}
           onContinue={() => {
             track("section_engaged", {
               section_id: "method",
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
-              confidence_gap: confidenceGap,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
+              confidence_gap: confidenceGapLabel,
+              confidence_gaps: selectedConfidenceGaps,
               cta_id: "continue_to_proof",
             });
             track("flow_step_viewed", {
               step_id: "proof_values",
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
-              confidence_gap: confidenceGap,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
+              confidence_gap: confidenceGapLabel,
+              confidence_gaps: selectedConfidenceGaps,
               cta_id: null,
             });
             setStep("proof");
@@ -442,19 +733,32 @@ function App() {
           route={selectedRoute}
           routeId={selectedRouteId}
           experience={routeExperience[selectedRouteId]}
+          skipHref={getWhatsappUrl({
+            route: selectedRoute,
+            routeId: selectedRouteId,
+            motivationId: primaryMotivation,
+            motivationIds: selectedMotivations,
+            confidenceGap: confidenceGapLabel,
+            confidenceGaps: selectedConfidenceGaps,
+            ctaId: "skip_to_call_proof",
+          })}
           onContinue={() => {
             track("section_engaged", {
               section_id: "proof_values",
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
-              confidence_gap: confidenceGap,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
+              confidence_gap: confidenceGapLabel,
+              confidence_gaps: selectedConfidenceGaps,
               cta_id: "continue_to_final_cta",
             });
             track("cta_seen", {
               cta_id: "final_whatsapp",
               route_id: selectedRouteId,
-              motivation_id: selectedMotivation,
-              confidence_gap: confidenceGap,
+              motivation_id: primaryMotivation,
+              motivation_ids: selectedMotivations,
+              confidence_gap: confidenceGapLabel,
+              confidence_gaps: selectedConfidenceGaps,
               cta_readiness: "high",
             });
             setStep("final");
@@ -468,12 +772,23 @@ function App() {
       <FinalCta
         route={selectedRoute}
         routeId={selectedRouteId}
-        motivationId={selectedMotivation}
-        confidenceGap={confidenceGap}
+        motivationId={primaryMotivation}
+        motivationIds={selectedMotivations}
+        confidenceGap={confidenceGapLabel}
+        confidenceGaps={selectedConfidenceGaps}
         onBack={() => setStep("confidence")}
       />
     );
-  }, [step, selectedMotivation, confidenceGap, selectedRoute, selectedRouteId]);
+  }, [
+    step,
+    selectedMotivations,
+    primaryMotivation,
+    selectedConfidenceGaps,
+    primaryConfidenceGap,
+    confidenceGapLabel,
+    selectedRoute,
+    selectedRouteId,
+  ]);
 
   return (
     <main dir="rtl" lang="he" className="min-h-screen overflow-hidden bg-foam text-ink">
@@ -517,7 +832,7 @@ function Header({ label, onBack }) {
   );
 }
 
-function Intro({ onStart }) {
+function Intro({ onStart, skipHref }) {
   return (
     <Shell>
       <div className="flex items-center justify-between">
@@ -553,6 +868,7 @@ function Intro({ onStart }) {
 
       <div className="mt-auto pt-8">
         <PrimaryButton onClick={onStart}>להתחיל את המסע</PrimaryButton>
+        <SkipToCallLink href={skipHref} ctaId="skip_to_call_intro" stepId="intro" />
         <p className="mt-3 text-center text-sm font-medium text-ink/55">
           בלי התחייבות. בלי החלטה עכשיו. רק בהירות.
         </p>
@@ -561,7 +877,7 @@ function Intro({ onStart }) {
   );
 }
 
-function QuestionOne({ selected, onSelect, onContinue, onBack }) {
+function QuestionOne({ selected, onSelect, onContinue, onBack, skipHref }) {
   return (
     <Shell tone="from-foam via-aqua/60 to-dune/80">
       <Header label="1 מתוך 2" onBack={onBack} />
@@ -571,7 +887,7 @@ function QuestionOne({ selected, onSelect, onContinue, onBack }) {
           מה גרם לך לעצור על טיול כזה?
         </h2>
         <p className="mt-3 text-base leading-6 text-ink/65">
-          תבחר את מה שהכי קרוב אליך עכשיו. לא צריך לדייק מושלם.
+          אפשר לבחור עד 3 דברים שמרגישים נכונים. אחר כך נבין מה הכי חזק עכשיו.
         </p>
       </div>
 
@@ -579,7 +895,7 @@ function QuestionOne({ selected, onSelect, onContinue, onBack }) {
         {motivations.map((item) => (
           <button
             key={item.id}
-            className={`answer-card ${selected === item.id ? "answer-card-selected" : ""}`}
+            className={`answer-card ${selected.includes(item.id) ? "answer-card-selected" : ""}`}
             onClick={() => onSelect(item.id)}
           >
             <span>{item.label}</span>
@@ -588,15 +904,69 @@ function QuestionOne({ selected, onSelect, onContinue, onBack }) {
       </div>
 
       <div className="mt-auto pt-6">
-        <PrimaryButton disabled={!selected} onClick={onContinue}>
+        <p className="mb-3 text-center text-sm font-bold text-ink/55">
+          נבחרו {selected.length} מתוך {MAX_SELECTIONS}
+        </p>
+        <PrimaryButton disabled={!selected.length} onClick={onContinue}>
           להמשיך
         </PrimaryButton>
+        <SkipToCallLink href={skipHref} ctaId="skip_to_call_q1" stepId="q1" />
       </div>
     </Shell>
   );
 }
 
-function RouteReveal({ route, routeId, onContinue, onBack }) {
+function PrimaryMotivation({
+  selectedMotivations,
+  primary,
+  onSelect,
+  onContinue,
+  onBack,
+  skipHref,
+}) {
+  return (
+    <Shell tone="from-foam via-aqua/60 to-dune/80">
+      <Header label="מה הכי חזק" onBack={onBack} />
+      <div className="animate-reveal mt-12">
+        <p className="mb-3 text-sm font-bold text-sand">בחרת כמה דברים נכונים</p>
+        <h2 className="text-3xl font-black leading-tight">
+          ומה הכי מושך אותך עכשיו?
+        </h2>
+        <p className="mt-3 text-base leading-6 text-ink/65">
+          זה לא מוחק את השאר. זה רק עוזר לנו לפתוח את המסלול מהמקום הכי חי.
+        </p>
+      </div>
+
+      <div className="mt-7 grid gap-3">
+        {selectedMotivations.map((id) => {
+          const item = getMotivation(id);
+          return (
+            <button
+              key={id}
+              className={`answer-card ${primary === id ? "answer-card-selected" : ""}`}
+              onClick={() => onSelect(id)}
+            >
+              <span>{item?.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-auto pt-6">
+        <PrimaryButton disabled={!primary} onClick={onContinue}>
+          לפתוח את המסלול שלי
+        </PrimaryButton>
+        <SkipToCallLink
+          href={skipHref}
+          ctaId="skip_to_call_primary_motivation"
+          stepId="primary_motivation"
+        />
+      </div>
+    </Shell>
+  );
+}
+
+function RouteReveal({ route, routeId, skipHref, onContinue, onBack }) {
   return (
     <Shell tone={route.accent}>
       <Header label="המסלול שלך" onBack={onBack} />
@@ -620,12 +990,17 @@ function RouteReveal({ route, routeId, onContinue, onBack }) {
 
       <div className="mt-auto pt-8">
         <PrimaryButton onClick={onContinue}>להמשיך במסלול שלי</PrimaryButton>
+        <SkipToCallLink
+          href={skipHref}
+          ctaId="skip_to_call_route_reveal"
+          stepId="route_reveal"
+        />
       </div>
     </Shell>
   );
 }
 
-function QuestionTwo({ route, selected, onSelect, onContinue, onBack }) {
+function QuestionTwo({ route, selected, skipHref, onSelect, onContinue, onBack }) {
   return (
     <Shell tone="from-foam via-dune/70 to-aqua/60">
       <Header label="2 מתוך 2" onBack={onBack} />
@@ -637,32 +1012,89 @@ function QuestionTwo({ route, selected, onSelect, onContinue, onBack }) {
           מה יעזור לך להרגיש יותר בטוח לפני שיחה?
         </h2>
         <p className="mt-3 text-base leading-6 text-ink/65">
-          זה עוזר לנו להראות את החלק בחוויה שבדרך כלל מוריד הכי הרבה התלבטות.
+          אפשר לבחור עד 3 דברים שיושבים לך בראש. אחר כך נענה קודם על מה שהכי חשוב.
         </p>
       </div>
 
       <div className="mt-7 grid gap-3">
-        {confidenceOptions.map((label) => (
+        {confidenceOptions.map((option) => (
           <button
-            key={label}
-            className={`answer-card ${selected === label ? "answer-card-selected" : ""}`}
-            onClick={() => onSelect(label)}
+            key={option.id}
+            className={`answer-card ${selected.includes(option.id) ? "answer-card-selected" : ""}`}
+            onClick={() => onSelect(option.id)}
           >
-            <span>{label}</span>
+            <span>{option.label}</span>
           </button>
         ))}
       </div>
 
       <div className="mt-auto pt-6">
-        <PrimaryButton disabled={!selected} onClick={onContinue}>
+        <p className="mb-3 text-center text-sm font-bold text-ink/55">
+          נבחרו {selected.length} מתוך {MAX_SELECTIONS}
+        </p>
+        <PrimaryButton disabled={!selected.length} onClick={onContinue}>
           להראות לי את הביטחון במסלול
         </PrimaryButton>
+        <SkipToCallLink href={skipHref} ctaId="skip_to_call_q2" stepId="q2" />
       </div>
     </Shell>
   );
 }
 
-function ConfidenceModule({ route, routeId, confidenceGap, onContinue, onBack }) {
+function PrimaryConfidenceGap({
+  route,
+  selectedConfidenceGaps,
+  primary,
+  onSelect,
+  onContinue,
+  onBack,
+  skipHref,
+}) {
+  return (
+    <Shell tone="from-foam via-dune/70 to-aqua/60">
+      <Header label="מה קודם" onBack={onBack} />
+      <div className="animate-reveal mt-10">
+        <span className="rounded-full bg-white/70 px-3 py-2 text-xs font-bold text-ink/60">
+          {route.name}
+        </span>
+        <h2 className="mt-5 text-3xl font-black leading-tight">
+          ומה הכי חשוב שנענה עליו קודם?
+        </h2>
+        <p className="mt-3 text-base leading-6 text-ink/65">
+          כל מה שבחרת נשאר בהקשר. עכשיו נתחיל מהמקום שהכי יכול להוריד התלבטות.
+        </p>
+      </div>
+
+      <div className="mt-7 grid gap-3">
+        {selectedConfidenceGaps.map((id) => {
+          const option = getConfidenceOption(id);
+          return (
+            <button
+              key={id}
+              className={`answer-card ${primary === id ? "answer-card-selected" : ""}`}
+              onClick={() => onSelect(id)}
+            >
+              <span>{option?.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-auto pt-6">
+        <PrimaryButton disabled={!primary} onClick={onContinue}>
+          להתחיל מזה
+        </PrimaryButton>
+        <SkipToCallLink
+          href={skipHref}
+          ctaId="skip_to_call_primary_confidence"
+          stepId="primary_confidence_gap"
+        />
+      </div>
+    </Shell>
+  );
+}
+
+function ConfidenceModule({ route, routeId, confidenceGap, skipHref, onContinue, onBack }) {
   return (
     <Shell tone="from-aqua/50 via-foam to-dune/70">
       <Header label="ביטחון" onBack={onBack} />
@@ -701,12 +1133,17 @@ function ConfidenceModule({ route, routeId, confidenceGap, onContinue, onBack })
 
       <div className="mt-auto pt-6">
         <PrimaryButton onClick={onContinue}>להראות לי את השלב הבא</PrimaryButton>
+        <SkipToCallLink
+          href={skipHref}
+          ctaId="skip_to_call_confidence"
+          stepId="confidence_module"
+        />
       </div>
     </Shell>
   );
 }
 
-function TypicalDay({ route, experience, onContinue, onBack }) {
+function TypicalDay({ route, experience, skipHref, onContinue, onBack }) {
   return (
     <Shell tone="from-coral/20 via-dune to-aqua/50">
       <Header label="איך זה מרגיש" onBack={onBack} />
@@ -740,12 +1177,17 @@ function TypicalDay({ route, experience, onContinue, onBack }) {
 
       <div className="mt-auto pt-6">
         <PrimaryButton onClick={onContinue}>להראות לי את השיטה מאחורי זה</PrimaryButton>
+        <SkipToCallLink
+          href={skipHref}
+          ctaId="skip_to_call_typical_day"
+          stepId="typical_day"
+        />
       </div>
     </Shell>
   );
 }
 
-function MethodModule({ route, experience, onContinue, onBack }) {
+function MethodModule({ route, experience, skipHref, onContinue, onBack }) {
   return (
     <Shell tone="from-aqua/50 via-foam to-dune/70">
       <Header label="השיטה" onBack={onBack} />
@@ -789,12 +1231,13 @@ function MethodModule({ route, experience, onContinue, onBack }) {
 
       <div className="mt-auto pt-6">
         <PrimaryButton onClick={onContinue}>להראות לי הוכחה וערכים</PrimaryButton>
+        <SkipToCallLink href={skipHref} ctaId="skip_to_call_method" stepId="method" />
       </div>
     </Shell>
   );
 }
 
-function ProofValues({ route, experience, onContinue, onBack }) {
+function ProofValues({ route, experience, skipHref, onContinue, onBack }) {
   return (
     <Shell tone="from-dune via-foam to-aqua/70">
       <Header label="הוכחה" onBack={onBack} />
@@ -835,12 +1278,21 @@ function ProofValues({ route, experience, onContinue, onBack }) {
 
       <div className="mt-auto pt-6">
         <PrimaryButton onClick={onContinue}>לעבור לשיחת התאמה</PrimaryButton>
+        <SkipToCallLink href={skipHref} ctaId="skip_to_call_proof" stepId="proof_values" />
       </div>
     </Shell>
   );
 }
 
-function FinalCta({ route, routeId, motivationId, confidenceGap, onBack }) {
+function FinalCta({
+  route,
+  routeId,
+  motivationId,
+  motivationIds,
+  confidenceGap,
+  confidenceGaps,
+  onBack,
+}) {
   const ctaId = "final_whatsapp";
 
   return (
@@ -880,7 +1332,9 @@ function FinalCta({ route, routeId, motivationId, confidenceGap, onBack }) {
             route,
             routeId,
             motivationId,
+            motivationIds,
             confidenceGap,
+            confidenceGaps,
             ctaId,
           })}
           target="_blank"
@@ -890,13 +1344,17 @@ function FinalCta({ route, routeId, motivationId, confidenceGap, onBack }) {
               cta_id: ctaId,
               route_id: routeId,
               motivation_id: motivationId,
+              motivation_ids: motivationIds,
               confidence_gap: confidenceGap,
+              confidence_gaps: confidenceGaps,
               route_name: route.name,
             });
             track("call_booking_clicked", {
               route_id: routeId,
               motivation_id: motivationId,
+              motivation_ids: motivationIds,
               confidence_gap: confidenceGap,
+              confidence_gaps: confidenceGaps,
               cta_id: ctaId,
             });
           }}
@@ -920,6 +1378,25 @@ function PrimaryButton({ children, disabled, onClick }) {
     >
       {children}
     </button>
+  );
+}
+
+function SkipToCallLink({ href, ctaId, stepId }) {
+  return (
+    <a
+      className="mt-3 flex min-h-11 items-center justify-center rounded-full bg-white/65 px-4 text-center text-sm font-extrabold text-ink/70 shadow-card transition hover:bg-white/85"
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      onClick={() => {
+        track("skip_to_call_clicked", {
+          cta_id: ctaId,
+          step_id: stepId,
+        });
+      }}
+    >
+      אני מעדיף לדבר עם מישהו
+    </a>
   );
 }
 
