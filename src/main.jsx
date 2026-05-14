@@ -856,13 +856,13 @@ function Intro({ onStart, skipHref }) {
 
       <div className="animate-reveal-delayed mt-8">
         <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-sand">
-          Confidence Journey
+          רגע לפני הפרטים
         </p>
         <h1 className="text-4xl font-black leading-[1.02] text-ink">
-          לפני הפרטים, בוא נבין מה באמת חשוב לך בטיול.
+          לפני שבודקים תאריכים ומחירים, בוא נבין איזה טיול באמת יתאים לך.
         </h1>
         <p className="mt-5 text-lg leading-7 text-ink/72">
-          שתי שאלות קצרות, ומסלול אישי שמראה את החלק בחוויה שהכי יכול לבנות לך ביטחון.
+          כמה בחירות קצרות שיעזרו לנו להבין מה מושך אותך, מה אולי עוצר אותך, ואיזה חלק בחוויה של Chasing Fun יכול לבנות לך הכי הרבה ביטחון.
         </p>
       </div>
 
@@ -870,7 +870,7 @@ function Intro({ onStart, skipHref }) {
         <PrimaryButton onClick={onStart}>להתחיל את המסע</PrimaryButton>
         <SkipToCallLink href={skipHref} ctaId="skip_to_call_intro" stepId="intro" />
         <p className="mt-3 text-center text-sm font-medium text-ink/55">
-          בלי התחייבות. בלי החלטה עכשיו. רק בהירות.
+          בלי התחייבות. בלי להחליט עכשיו. רק להבין אם זה הכיוון הנכון לך.
         </p>
       </div>
     </Shell>
@@ -884,7 +884,7 @@ function QuestionOne({ selected, onSelect, onContinue, onBack, skipHref }) {
       <div className="animate-reveal mt-12">
         <p className="mb-3 text-sm font-bold text-sand">נתחיל במה שמושך אותך</p>
         <h2 className="text-3xl font-black leading-tight">
-          מה גרם לך לעצור על טיול כזה?
+          מה גרם לך לעצור דווקא על טיול כזה?
         </h2>
         <p className="mt-3 text-base leading-6 text-ink/65">
           אפשר לבחור עד 3 דברים שמרגישים נכונים. אחר כך נבין מה הכי חזק עכשיו.
@@ -930,10 +930,10 @@ function PrimaryMotivation({
       <div className="animate-reveal mt-12">
         <p className="mb-3 text-sm font-bold text-sand">בחרת כמה דברים נכונים</p>
         <h2 className="text-3xl font-black leading-tight">
-          ומה הכי מושך אותך עכשיו?
+          מתוך מה שבחרת, מה הכי מושך אותך עכשיו?
         </h2>
         <p className="mt-3 text-base leading-6 text-ink/65">
-          זה לא מוחק את השאר. זה רק עוזר לנו לפתוח את המסלול מהמקום הכי חי.
+          זה לא מוחק את השאר. זה רק עוזר לנו לפתוח את הכיוון מהמקום שהכי חי אצלך.
         </p>
       </div>
 
@@ -954,7 +954,7 @@ function PrimaryMotivation({
 
       <div className="mt-auto pt-6">
         <PrimaryButton disabled={!primary} onClick={onContinue}>
-          לפתוח את המסלול שלי
+          להמשיך לכיוון שלי
         </PrimaryButton>
         <SkipToCallLink
           href={skipHref}
@@ -969,7 +969,7 @@ function PrimaryMotivation({
 function RouteReveal({ route, routeId, skipHref, onContinue, onBack }) {
   return (
     <Shell tone={route.accent}>
-      <Header label="המסלול שלך" onBack={onBack} />
+      <Header label="הכיוון שלך" onBack={onBack} />
       <div className="animate-reveal mt-12">
         <span className="inline-flex rounded-full bg-white/80 px-4 py-2 text-sm font-extrabold text-ink/65 shadow-card">
           {route.chip}
@@ -989,7 +989,7 @@ function RouteReveal({ route, routeId, skipHref, onContinue, onBack }) {
       </div>
 
       <div className="mt-auto pt-8">
-        <PrimaryButton onClick={onContinue}>להמשיך במסלול שלי</PrimaryButton>
+        <PrimaryButton onClick={onContinue}>להמשיך בכיוון שלי</PrimaryButton>
         <SkipToCallLink
           href={skipHref}
           ctaId="skip_to_call_route_reveal"
@@ -1033,7 +1033,7 @@ function QuestionTwo({ route, selected, skipHref, onSelect, onContinue, onBack }
           נבחרו {selected.length} מתוך {MAX_SELECTIONS}
         </p>
         <PrimaryButton disabled={!selected.length} onClick={onContinue}>
-          להראות לי את הביטחון במסלול
+          להראות לי מה יכול לבנות ביטחון
         </PrimaryButton>
         <SkipToCallLink href={skipHref} ctaId="skip_to_call_q2" stepId="q2" />
       </div>
@@ -1058,7 +1058,7 @@ function PrimaryConfidenceGap({
           {route.name}
         </span>
         <h2 className="mt-5 text-3xl font-black leading-tight">
-          ומה הכי חשוב שנענה עליו קודם?
+          ומתוך זה, מה הכי חשוב שנענה עליו קודם?
         </h2>
         <p className="mt-3 text-base leading-6 text-ink/65">
           כל מה שבחרת נשאר בהקשר. עכשיו נתחיל מהמקום שהכי יכול להוריד התלבטות.
@@ -1082,7 +1082,7 @@ function PrimaryConfidenceGap({
 
       <div className="mt-auto pt-6">
         <PrimaryButton disabled={!primary} onClick={onContinue}>
-          להתחיל מזה
+          להתחיל מהנקודה הזאת
         </PrimaryButton>
         <SkipToCallLink
           href={skipHref}
@@ -1126,7 +1126,7 @@ function ConfidenceModule({ route, routeId, confidenceGap, skipHref, onContinue,
 
       <div className="mt-5 rounded-[24px] bg-ink p-5 text-foam shadow-card">
         <p className="text-sm font-bold uppercase tracking-[0.16em] text-aqua">
-          Proof moment
+          רגע של ביטחון
         </p>
         <p className="mt-3 text-lg font-semibold leading-7">{route.proof}</p>
       </div>
@@ -1162,7 +1162,7 @@ function TypicalDay({ route, experience, skipHref, onContinue, onBack }) {
       <div className="animate-reveal-delayed mt-7 rounded-[30px] bg-white/75 p-4 shadow-card backdrop-blur">
         <div className="media-day flex min-h-56 items-end rounded-[24px] p-5">
           <p className="max-w-64 text-base font-bold leading-6 text-white">
-            Placeholder: כאן ייכנס מיני מונטאז׳ יום טיפוסי לפי הנתיב.
+            רגעים מהיום: ים, גלישה, אנשים, אוכל וזמן פתוח לפי הכיוון שלך.
           </p>
         </div>
       </div>
@@ -1205,7 +1205,7 @@ function MethodModule({ route, experience, skipHref, onContinue, onBack }) {
 
       <div className="mt-7 rounded-[28px] bg-white/80 p-5 shadow-card">
         <p className="text-sm font-black uppercase tracking-[0.18em] text-ocean">
-          Trip stages
+          שלבי הטיול
         </p>
         <div className="mt-4 grid grid-cols-5 gap-2">
           {methodStages.map((stage) => (
@@ -1218,7 +1218,7 @@ function MethodModule({ route, experience, skipHref, onContinue, onBack }) {
 
       <div className="mt-4 rounded-[28px] bg-ink p-5 text-foam shadow-card">
         <p className="text-sm font-black uppercase tracking-[0.18em] text-aqua">
-          Trip layers
+          מה אנחנו מחזיקים
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {methodLayers.map((layer) => (
@@ -1255,7 +1255,7 @@ function ProofValues({ route, experience, skipHref, onContinue, onBack }) {
 
       <div className="mt-7 rounded-[28px] bg-white/80 p-5 shadow-card">
         <p className="text-sm font-black uppercase tracking-[0.18em] text-sand">
-          Chasing Fun values
+          מה חשוב לנו
         </p>
         <div className="mt-4 grid gap-3">
           <p className="rounded-2xl bg-dune/80 p-4 text-base font-bold leading-6 text-ink">
@@ -1269,15 +1269,15 @@ function ProofValues({ route, experience, skipHref, onContinue, onBack }) {
 
       <div className="mt-5 rounded-[24px] bg-ink p-5 text-foam shadow-card">
         <p className="text-sm font-bold uppercase tracking-[0.16em] text-aqua">
-          Placeholder proof
+          הוכחה מהשטח
         </p>
         <p className="mt-3 text-lg font-semibold leading-7">
-          כאן תיכנס עדות אמיתית, quote, או קטע וידאו קצר לפי הנתיב.
+          כאן תיכנס עדות אמיתית או קטע וידאו קצר שיראה איך זה מרגיש בפועל.
         </p>
       </div>
 
       <div className="mt-auto pt-6">
-        <PrimaryButton onClick={onContinue}>לעבור לשיחת התאמה</PrimaryButton>
+        <PrimaryButton onClick={onContinue}>להמשיך לשלב ההתאמה</PrimaryButton>
       </div>
     </Shell>
   );
@@ -1358,10 +1358,10 @@ function FinalCta({
             });
           }}
         >
-          {route.cta} בוואטסאפ
+          לבדוק התאמה בוואטסאפ
         </a>
         <p className="mt-3 text-center text-sm font-medium text-ink/55">
-          נפתח וואטסאפ עם הודעה מותאמת למסלול שלך.
+          נפתח וואטסאפ עם הודעה קצרה שמחברת לשיחה את מה שבחרת כאן.
         </p>
       </div>
     </Shell>
